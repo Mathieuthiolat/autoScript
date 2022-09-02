@@ -67,7 +67,7 @@ let script = {
       if (!autoFarmEngine.getElement(script.paths.claimTool)) {
         console.log('--dbg-- TIMER PATH FOUND...');
       } else {
-        if(1=1){
+        if(1==1){
 
         //}else{
           console.log('--dbg-- CLAIM PATH FOUND... trying to claim...');
@@ -84,17 +84,19 @@ let script = {
 
           console.log('--dbg-- Loop trough all tools ...');
           const nbTools = autoFarmEngine.getElementAll(script.paths.selectTool).lenght;
+          await autoFarmEngine.sleep(script.delay.afterAction);
 
           for(i=0;i<nbTools;i++){
           
             console.log('--dbg-- Check if tools is valid ...');
             autoFarmEngine.getElementAll(script.paths.selectTool)[i].click();
-            await autoFarmEngine.sleep(script.delay.afterAction);  
 
             if(!autoFarmEngine.getElement(script.paths.startMining).disabled){
               console.log('--dbg-- validate tool ...');
               autoFarmEngine.getElement(script.paths.startMining).click();
               await autoFarmEngine.sleep(script.delay.afterAction);  
+              autoFarmEngine.getElement(script.paths.availableMining).click();
+              await autoFarmEngine.sleep(script.delay.afterAction);
             }
           }
 
