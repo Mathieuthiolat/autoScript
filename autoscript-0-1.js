@@ -20,7 +20,7 @@ let script = {
     availableMining: "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex.flex-col.flex-1  button:nth-child(1)",
     activeMining: "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex.flex-col.flex-1  button:nth-child(2)",
     claimTool : "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex-1.p-5.overflow-y-scroll.border.shadow-inner .flex.flex-col button",
-    selectTool : "#root .flex.flex-col.w-full.gap-y-2 button",
+    selectTool : "#root .flex.flex-col.w-full.gap-y-2 button.cursor-pointer.relative.flex.flex-col.overflow-hidden.duration-300.transition-all.card.group",
     startMining : "#headlessui-portal-root .grid.grid-cols-2.shadow-inner button",
     /*claim: "#app > div > div.base-layout__main.base-layout__main--with-reward > div.reward-claimable > div.claim-reward > button > span",
     timer: "#app > div > div.base-layout__main > section > section > div > div.in-dungeon__timer-section > div.inline-timer.in-dungeon__timer-section-timer",
@@ -82,9 +82,21 @@ let script = {
           autoFarmEngine.getElement(script.paths.selectTool).click();
           await autoFarmEngine.sleep(script.delay.afterAction);
 
-          console.log('--dbg-- validate tool ...');
-          autoFarmEngine.getElement(script.paths.startMining).click();
-          await autoFarmEngine.sleep(script.delay.afterAction);
+          console.log('--dbg-- Loop trough all tools ...');
+          const nbTools = autoFarmEngine.getElementAll(script.paths.selectTool).lenght;
+
+          for(i=0;i<nbTools;i++){
+          
+            console.log('--dbg-- Check if tools is valid ...');
+            autoFarmEngine.getElementAll(script.paths.selectTool)[i].click();
+            await autoFarmEngine.sleep(script.delay.afterAction);  
+
+            if(!autoFarmEngine.getElement(script.paths.startMining).disabled){
+              console.log('--dbg-- validate tool ...');
+              autoFarmEngine.getElement(script.paths.startMining).click();
+              await autoFarmEngine.sleep(script.delay.afterAction);  
+            }
+          }
 
           console.log('--dbg-- View active Minigns ...');
           autoFarmEngine.getElement(script.paths.activeMining).click();
@@ -109,6 +121,9 @@ const autoFarmEngine = {
   },
   getElement: (path) => {
     return document.querySelector(path);
+  },
+  getElementAll: (path) => {
+    return document.querySelectorAll(path);
   },
   getElementByXpath: (path) => {
     return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
