@@ -5,7 +5,7 @@
  */
 let script = {
   delay: {
-    defaultLoopTime: 20 * 1000,
+    defaultLoopTime: 5 * 60000,
     afterAction: 1.5 * 1000,
     afterPageChange: 7 * 1000,
     afterCandyClaim: 3 * 1000,
@@ -56,6 +56,8 @@ let script = {
     try {
       console.log('--dbg-- Starting Main Loop !');
 
+      //Check if i'm on home page or verif
+
       // Check if unexpected error popup
       if (autoFarmEngine.getElement(script.paths.unexpectedError)) {
         console.log('--dbg-- UNEXPECTED ERROR FOUND... trying to resolve...');
@@ -63,48 +65,65 @@ let script = {
         await autoFarmEngine.sleep(script.delay.afterAction);
         await script.switchingPageForRefresh();
       }
-      // Check if remaining time ? (yes, wait next loop),
+      //Mouve to available items
+      if(!document.location.href.includes("/mining"))
+        document.location.href = "/mining"
+
+      if(!script.paths.availableMining){
+        console.log('--dbg-- Selection sphere ');
+        autoFarmEngine.getElement(script.paths.changeSphere).click();
+        await autoFarmEngine.sleep(script.delay.afterAction);
+
+        console.log('--dbg-- enter sphere page');
+        autoFarmEngine.getElement(script.paths.sphereNext).click();
+        await autoFarmEngine.sleep(script.delay.afterAction);
+      }       
+
+      // Check if tools to claim ,
+
+      console.log('--dbg-- View active Minigns ...');
+      autoFarmEngine.getElement(script.paths.activeMining).click();
+      await autoFarmEngine.sleep(script.delay.afterAction);
+
       if (!autoFarmEngine.getElement(script.paths.claimTool)) {
-        console.log('--dbg-- TIMER PATH FOUND...');
+        console.log('--dbg-- No tools need to claim');
       } else {
-        if(1==1){
+        if(2==1)//try to get need refresh verif
+          document.location.href = "/mining"
 
-        //}else{
-          console.log('--dbg-- CLAIM PATH FOUND... trying to claim...');
-          autoFarmEngine.getElement(script.paths.claimTool).click();
+        console.log('--dbg-- trying to claim...');
+        autoFarmEngine.getElement(script.paths.claimTool).click();
+        await autoFarmEngine.sleep(script.delay.afterAction);
+      }
+
+      //Check if tool need to mine
+      console.log('--dbg-- Re-launch ...');
+      autoFarmEngine.getElement(script.paths.availableMining).click();
+      await autoFarmEngine.sleep(script.delay.afterAction);
+
+      if (!autoFarmEngine.getElement(script.paths.selectTool)) {
+        console.log('--dbg-- No tools need to run');
+      } else {
+        console.log('--dbg-- Loop trough all tools ...');
+        var nbTools = autoFarmEngine.getElementAll(script.paths.selectTool).length;
+        await autoFarmEngine.sleep(script.delay.afterAction);
+  
+        console.log(nbTools +" Nombre d'outils en attente")
+        for(var i=0;i<nbTools;i++){
+          console.log('--dbg-- Check if tools is valid ...');
+          autoFarmEngine.getElementAll(script.paths.selectTool)[i].click();
           await autoFarmEngine.sleep(script.delay.afterAction);
 
-          console.log('--dbg-- Re-launch ...');
-          autoFarmEngine.getElement(script.paths.availableMining).click();
-          await autoFarmEngine.sleep(script.delay.afterAction);
-
-          console.log('--dbg-- Select first tool ...');
-          autoFarmEngine.getElement(script.paths.selectTool).click();
-          await autoFarmEngine.sleep(script.delay.afterAction);
-
-          console.log('--dbg-- Loop trough all tools ...');
-          const nbTools = autoFarmEngine.getElementAll(script.paths.selectTool).lenght;
-          await autoFarmEngine.sleep(script.delay.afterAction);
-
-          for(i=0;i<nbTools;i++){
-          
-            console.log('--dbg-- Check if tools is valid ...');
-            autoFarmEngine.getElementAll(script.paths.selectTool)[i].click();
-
-            if(!autoFarmEngine.getElement(script.paths.startMining).disabled){
-              console.log('--dbg-- validate tool ...');
-              autoFarmEngine.getElement(script.paths.startMining).click();
-              await autoFarmEngine.sleep(script.delay.afterAction);  
-              autoFarmEngine.getElement(script.paths.availableMining).click();
-              await autoFarmEngine.sleep(script.delay.afterAction);
-            }
+          if(!autoFarmEngine.getElement(script.paths.startMining).disabled){
+            console.log('--dbg-- validate tool ...');
+            autoFarmEngine.getElement(script.paths.startMining).click();
+            await autoFarmEngine.sleep(script.delay.afterAction);  
+            autoFarmEngine.getElement(script.paths.availableMining).click();
+            await autoFarmEngine.sleep(script.delay.afterAction);
           }
-
-          console.log('--dbg-- View active Minigns ...');
-          autoFarmEngine.getElement(script.paths.activeMining).click();
-          await autoFarmEngine.sleep(script.delay.afterAction);
         }
       }
+
       console.log('--dbg-- EOF Main Loop !');
     } catch (err) {
       console.log('### UNEXPECTED ERROR: ', err);
