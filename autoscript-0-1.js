@@ -1,13 +1,15 @@
 
 /**
  *  Author : Alxb & FreeQyMat
- *  Version: 0.1 (09/08/2022)
+ *  Version: 0.1 (06/09/2022)
  */
+
 let script = {
   delay: {
-    defaultLoopTime: 5 * 60000,
+    defaultLoopTime: 4 * 60000,
     afterAction: 1.5 * 1000,
     afterPageChange: 7 * 1000,
+    afterPageChangeError: 7 * 1000,
     afterCandyClaim: 3 * 1000,
   },
   paths: {
@@ -20,20 +22,9 @@ let script = {
     availableMining: "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex.flex-col.flex-1  button:nth-child(1)",
     activeMining: "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex.flex-col.flex-1  button:nth-child(2)",
     claimTool : "#root .relative.fade-animation .flex.flex-col.max-h-screen.min-h-screen.overflow-hidden>main>section div.flex-1.p-5.overflow-y-scroll.border.shadow-inner .flex.flex-col button",
+    selectToolsClaim : "#root .relative.px-8.py-3.group.text-stroke",
     selectTool : "#root .flex.flex-col.w-full.gap-y-2 button.cursor-pointer.relative.flex.flex-col.overflow-hidden.duration-300.transition-all.card.group",
-    startMining : "#headlessui-portal-root .grid.grid-cols-2.shadow-inner button",
-    /*claim: "#app > div > div.base-layout__main.base-layout__main--with-reward > div.reward-claimable > div.claim-reward > button > span",
-    timer: "#app > div > div.base-layout__main > section > section > div > div.in-dungeon__timer-section > div.inline-timer.in-dungeon__timer-section-timer",
-    claimRewards: "#app > div.base-layout.base-layout--green-bg > div.header > div.header__cell.header__cell--column-small-screen > div > div > button > div > div",
-    grabRewards: "#app > div.base-layout.base-layout--green-bg > div.header > div.header__cell.header__cell--column-small-screen > div > div > div.popup.reward-treasure-popup > div > button",
-    errorRewards: "#app > div.popup.error-view > div > div > button",
-    candyClaim: "#app > div.base-layout.base-layout--green-bg > div.base-layout__main > div.popup > div > div > button.btn.confirm-send-script-with-claimable-candy-modal__btn.confirm-send-wombat-with-claimable-candy-modal__btn--accept.btn--primary.btn--primary-without-arrow.btn--with-icon",
-    candyCancel: "#app > div.base-layout.base-layout--green-bg > div.base-layout__main > div.popup > div > div > button.btn.btn--outlined.confirm-send-wombat-with-claimable-candy-modal__btn.confirm-send-wombat-with-claimable-candy-modal__btn--reject",
-    unexpectedError: "#app > div.popup.error-view > div > div > button",
-    claimLevelUp: "#app > div.base-layout > div.base-layout__main.base-layout__main--with-reward > div.reward-claimable > div.claim-level.claim-level--active > button",
-    pages: {
-      //clan: "#app > div.base-layout.base-layout--black-bg > div.base-layout__main > div > div > div:nth-child(1) > a",
-    },*/
+    startMining : ".flex.items-end.justify-center button"
   },
   xpaths: {
     launch: "/html/body/div[1]/div/div[2]/section/div/div[3]/div/button[1]",
@@ -55,9 +46,6 @@ let script = {
 
     try {
       console.log('--dbg-- Starting Main Loop !');
-
-      //Check if i'm on home page or verif
-
       // Check if unexpected error popup
       if (autoFarmEngine.getElement(script.paths.unexpectedError)) {
         console.log('--dbg-- UNEXPECTED ERROR FOUND... trying to resolve...');
@@ -65,36 +53,71 @@ let script = {
         await autoFarmEngine.sleep(script.delay.afterAction);
         await script.switchingPageForRefresh();
       }
-      //Mouve to available items
+
+
+      //Check if we need to verify
+      if(document.querySelector(".Toastify>div") != null || document.querySelector(".Toastify>div") != undefined)
+        document.location.href = "/mining"
+
+      //Check if we are in mining part
       if(!document.location.href.includes("/mining"))
         document.location.href = "/mining"
 
-      if(!script.paths.availableMining){
-        console.log('--dbg-- Selection sphere ');
-        autoFarmEngine.getElement(script.paths.changeSphere).click();
+      //Check if we are on the verify page
+      if(autoFarmEngine.getElementByText("button","Login") != undefined){
+        console.log('--dbg-- Login page');
+        autoFarmEngine.getElementByText("button","Login").click();
         await autoFarmEngine.sleep(script.delay.afterAction);
+        autoFarmEngine.getElement(script.paths.loginWax).click();
+        await autoFarmEngine.sleep(script.delay.afterAction);
+      }
+
+      //Check if we are on the verify page
+      if(autoFarmEngine.getElementByText("button","Verify") != undefined){
+        console.log('--dbg-- verifi page');
+        autoFarmEngine.getElementByText("button","Verify").click();
+        await autoFarmEngine.sleep(script.delay.verifyBtn);     
+      }
+
+      //Enter mining page 
+      if(autoFarmEngine.getElementByText("p","Choose a sphere")){
+        /*console.log('--dbg-- Selection sphere ');
+        autoFarmEngine.getElementByText("button","Available items").click();
+        await autoFarmEngine.sleep(script.delay.afterAction);*/
 
         console.log('--dbg-- enter sphere page');
-        autoFarmEngine.getElement(script.paths.sphereNext).click();
+        autoFarmEngine.getElementByText("button","Next").click();
         await autoFarmEngine.sleep(script.delay.afterAction);
       }       
 
       // Check if tools to claim ,
-
-      console.log('--dbg-- View active Minigns ...');
-      autoFarmEngine.getElement(script.paths.activeMining).click();
-      await autoFarmEngine.sleep(script.delay.afterAction);
-
-      if (!autoFarmEngine.getElement(script.paths.claimTool)) {
-        console.log('--dbg-- No tools need to claim');
-      } else {
-        if(2==1)//try to get need refresh verif
-          document.location.href = "/mining"
-
-        console.log('--dbg-- trying to claim...');
-        autoFarmEngine.getElement(script.paths.claimTool).click();
+      if(autoFarmEngine.getElement(script.paths.activeMining)){
+        console.log('--dbg-- View active Minigns ...');
+        autoFarmEngine.getElement(script.paths.activeMining).click();
         await autoFarmEngine.sleep(script.delay.afterAction);
+  
+        if (!autoFarmEngine.getElement(script.paths.claimTool)) {
+          console.log('--dbg-- No tools need to claim');
+        } else { 
+          console.log('--dbg-- Loop trough all tools ...');
+          var nbTools = autoFarmEngine.getElementAll(script.paths.selectToolsClaim).length;
+          await autoFarmEngine.sleep(script.delay.afterAction);
+    
+          console.log(nbTools +" Nombre d'outils en attente")
+          for(var i=0;i<nbTools;i++){
+            //Check if we need to verify
+            if(document.querySelector(".Toastify>div") != null || document.querySelector(".Toastify>div") != undefined)
+              document.location.href = "/mining"
+              
+            console.log('--dbg-- trying to claim...');
+            autoFarmEngine.getElement(script.paths.selectToolsClaim).click();
+            await autoFarmEngine.sleep(script.delay.afterAction);
+    
+          
+          }  
+        }
       }
+
 
       //Check if tool need to mine
       console.log('--dbg-- Re-launch ...');
@@ -111,7 +134,7 @@ let script = {
         console.log(nbTools +" Nombre d'outils en attente")
         for(var i=0;i<nbTools;i++){
           console.log('--dbg-- Check if tools is valid ...');
-          autoFarmEngine.getElementAll(script.paths.selectTool)[i].click();
+          autoFarmEngine.getElement(script.paths.selectTool).click();
           await autoFarmEngine.sleep(script.delay.afterAction);
 
           if(!autoFarmEngine.getElement(script.paths.startMining).disabled){
@@ -145,6 +168,9 @@ const autoFarmEngine = {
   },
   getElementAll: (path) => {
     return document.querySelectorAll(path);
+  },
+  getElementByText: (object,text) => {
+    return Array.from(document.querySelectorAll(object)).find(el => el.textContent === text);
   },
   getElementByXpath: (path) => {
     return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
