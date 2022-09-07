@@ -5,6 +5,7 @@
  */
 
 let script = {
+  startBtn : true,
   delay: {
     defaultLoopTime: 4 * 60000,
     afterAction: 1.5 * 1000,
@@ -244,6 +245,23 @@ const autoFarmEngine = {
         -webkit-box-shadow: 9px -9px 40px 4px rgba(0,0,0,0.67);
         -moz-box-shadow: 9px -9px 40px 4px rgba(0,0,0,0.67);
       }
+      #startBtn{
+        position: absolute;
+        bottom: 60px;
+        width: 300px;
+        height: 50px;
+        z-index: 100;
+        border: 3px solid white;
+        border-radius: 10px 10px 10px 10px;
+        text-align: center;
+        padding-top: 5px;
+        font-size: 24px;
+        box-shadow: 9px -9px 40px 4px rgba(0,0,0,0.67);
+        -webkit-box-shadow: 9px -9px 40px 4px rgba(0,0,0,0.67);
+        -moz-box-shadow: 9px -9px 40px 4px rgba(0,0,0,0.67);
+        background: #fff;
+        left: 50%;
+      }
       .monitor-loaded {
         background-color: #85C1E9;
       }
@@ -271,7 +289,31 @@ const autoFarmEngine = {
         monitor.classList.add('monitor-loaded');
         monitor.innerHTML = 'Not Started';
         document.body.appendChild(monitor);
+        /* Start/Stop */
 
+        const startButtonContaint = document.createElement('div');
+      
+        startButtonContaint.setAttribute('id', 'startBtn');
+
+        startButtonContaint.classList.add('button-style');
+        startButtonContaint.classList.add('button-on');
+
+        startButtonContaint.innerHTML = 'Start';
+
+        document.body.appendChild(startButtonContaint);
+
+        startButtonContaint.addEventListener('click', event => {
+          if(script.startBtn){
+            autoFarmEngine.stop()
+          }else{
+            autoFarmEngine.start()
+          }
+          
+          script.startBtn = autoFarmEngine.monitor.checkBtnON(startButtonContaint,script.startBtn,"StartBtn")
+
+        });
+  
+  
         setInterval(() => {
           if (autoFarmEngine.monitor._loopTimer > 0) {
             autoFarmEngine.monitor._loopTimer = (autoFarmEngine.monitor._loopTimer < 1000) ? 0 : (autoFarmEngine.monitor._loopTimer - 1000);
@@ -287,6 +329,22 @@ const autoFarmEngine = {
 
         autoFarmEngine.monitor._isInitialized = true;
       }
+    },
+    checkBtnON: (obj,varBool,objName,justCheck = false)=>{
+      if(varBool == true && !justCheck || varBool == false && justCheck ){
+        varBool =  false;
+        obj.innerHTML = objName+' OFF';
+        obj.classList.add('button-off');
+        obj.classList.remove('button-on');
+      }
+      else{
+        varBool = true
+        obj.innerHTML = objName+' ON';
+        obj.classList.remove('button-off');
+        obj.classList.add('button-on');
+      }
+      console.log(objName+" check ->"+varBool)
+      return varBool;
     },
     setLoaded: (msg = 'Stopped') => {
       autoFarmEngine.monitor._state = 'loaded';
